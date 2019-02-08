@@ -165,7 +165,7 @@ pub(crate) mod internal {
 // to the connection object.
 #[derive(Default)]
 pub struct ComponentDatabase {
-    component_vtables: Vec<worker::Worker_ComponentVtable>,
+    pub(crate) component_vtables: Vec<worker::Worker_ComponentVtable>,
 }
 
 impl ComponentDatabase {

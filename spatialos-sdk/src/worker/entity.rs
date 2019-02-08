@@ -1,5 +1,5 @@
 use crate::worker::component::{self, Component, ComponentId};
-use spatialos_sdk_sys::worker::Worker_ComponentData;
+use spatialos_sdk_sys::worker::{Worker_ComponentData, Worker_Entity};
 use std::collections::HashMap;
 use std::ptr;
 
@@ -53,6 +53,13 @@ impl Entity {
 
     pub(crate) fn raw_component_data(&self) -> Vec<Worker_ComponentData> {
         self.components.values().map(|data| data.raw_data).collect()
+    }
+
+    pub(crate) fn add_raw(&mut self, data: Worker_ComponentData, drop_fn: unsafe fn(*mut std::ffi::c_void)) {
+        self.components.insert(data.component_id, ComponentData {
+            raw_data: data,
+            drop_fn
+        });
     }
 }
 
