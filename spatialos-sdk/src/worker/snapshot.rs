@@ -25,7 +25,7 @@ impl SnapshotOutputStream {
             Worker_SnapshotOutputStream_Create(filename_cstr.as_ptr(), &params.to_worker_sdk())
         };
 
-        SnapshotOutputStream { ptr: ptr }
+        SnapshotOutputStream { ptr }
     }
 
     pub fn write_entity(&self, id: EntityId, entity: &Entity) -> Result<(), String> {
@@ -105,7 +105,7 @@ impl<'a> SnapshotInputStream<'a> {
 
     pub fn read_entity(&mut self) -> Result<Entity, String> {
         let wrk_entity = unsafe { *Worker_SnapshotInputStream_ReadEntity(self.ptr) };
-        let mut entity = Entity::new();
+        let mut entity = Entity::new(self.database);
 
         let component_data = unsafe {
             ::std::slice::from_raw_parts(wrk_entity.components, wrk_entity.component_count as usize)
@@ -113,15 +113,7 @@ impl<'a> SnapshotInputStream<'a> {
 
         for component in component_data {
             let c = unsafe { *Worker_AcquireComponentData(component) };
-            let drop_fn = self.database.component_vtables
-                .iter()
-                .filter(|table| table.component_id == c.component_id)
-                .nth(0)
-                .unwrap()
-                .component_data_free
-                .unwrap();
-
-            entity.add_raw(c, drop_fn);
+            entity.add_raw(c);
         }
 
         Ok(entity)

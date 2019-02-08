@@ -1,25 +1,20 @@
-use crate::worker::component::{self, Component, ComponentId};
+use crate::worker::component::{self, Component, ComponentId, ComponentDatabase};
 use spatialos_sdk_sys::worker::{Worker_ComponentData, Worker_Entity};
 use std::collections::HashMap;
 use std::ptr;
 
-#[derive(Debug)]
-struct ComponentData {
-    raw_data: Worker_ComponentData,
-
-    // Type-erased version of the drop impl for the component type. Given the raw
-    // pointer to the component data, it'll reconstruct the handle and free it.
-    drop_fn: unsafe fn(*mut std::ffi::c_void),
+//#[derive(Debug)]
+pub struct Entity<'a> {
+    components: HashMap<ComponentId, Worker_ComponentData>,
+    database: &'a ComponentDatabase
 }
 
-#[derive(Debug, Default)]
-pub struct Entity {
-    components: HashMap<ComponentId, ComponentData>,
-}
-
-impl Entity {
-    pub fn new() -> Self {
-        Self::default()
+impl<'a> Entity<'a> {
+    pub fn new(database: &'a ComponentDatabase) -> Self {
+        Entity {
+            components: HashMap::new(),
+            database
+        }
     }
 
     pub fn add<C: Component>(&mut self, component: C) {
@@ -38,41 +33,34 @@ impl Entity {
 
         self.components.insert(
             C::ID,
-            ComponentData {
-                raw_data,
-                drop_fn: drop_raw::<C>,
-            },
+            raw_data
         );
     }
 
     pub fn get<C: Component>(&self) -> Option<&C> {
         self.components
             .get(&C::ID)
-            .map(|data| unsafe { &*(data.raw_data.user_handle as *const _) })
+            .map(|data| unsafe { &*(data.user_handle as *const _) })
     }
 
     pub(crate) fn raw_component_data(&self) -> Vec<Worker_ComponentData> {
-        self.components.values().map(|data| data.raw_data).collect()
+        self.components.values().map(|c| c.clone()).collect()
     }
 
-    pub(crate) fn add_raw(&mut self, data: Worker_ComponentData, drop_fn: unsafe fn(*mut std::ffi::c_void)) {
-        self.components.insert(data.component_id, ComponentData {
-            raw_data: data,
-            drop_fn
-        });
+    pub(crate) fn add_raw(&mut self, data: Worker_ComponentData) {
+        self.components.insert(data.component_id, data);
     }
 }
 
-impl Drop for Entity {
+impl<'a> Drop for Entity<'a> {
     fn drop(&mut self) {
-        for data in self.components.values() {
-            unsafe {
-                (data.drop_fn)(data.raw_data.user_handle);
+        for vtable in &self.database.component_vtables {
+            let id = vtable.component_id;
+            if self.components.contains_key(&id) {
+                unsafe {
+                    (vtable.component_data_free.unwrap())(0, ::std::ptr::null_mut(), self.components[&id].user_handle as *mut std::ffi::c_void)
+                }
             }
         }
     }
-}
-
-unsafe fn drop_raw<T>(raw: *mut std::ffi::c_void) {
-    component::handle_free::<T>(raw);
 }
