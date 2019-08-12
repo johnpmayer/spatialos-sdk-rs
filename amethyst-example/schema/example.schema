@@ -1,0 +1,56 @@
+package example;
+
+type Vector3d {
+    double x = 1;
+    double y = 2;
+    double z = 3;
+}
+
+type CommandData {
+    int32 value = 1;
+}
+
+type TestType {
+    type Inner {
+        float number = 2;
+    }
+    [Inner(2.0)]
+    int32 value = 1;
+}
+
+component Example {
+    id = 1000;
+    float x = 1;
+    command CommandData test_command(CommandData);
+}
+
+/// Indicates that an entity should rotate in a circle around the specified center point.
+component Rotate {
+    id = 1001;
+
+    /// The current angle (in radians) offset from the base.
+    double angle = 1;
+
+    /// The center of the circle
+    Vector3d center = 2;
+
+    /// The radius of the rotation.
+    double radius = 3;
+}
+
+component EntityIdTest {
+    id = 2001;
+
+    EntityId eid = 1;
+}
+
+enum TestEnum {
+    FIRST = 0;
+    SECOND = 1;
+}
+
+component EnumTestComponent {
+    id = 2002;
+
+    TestEnum test = 1;
+}

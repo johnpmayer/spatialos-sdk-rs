@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
+    "amethyst-example",
     "cargo-spatial",
     "project-example",
     "spatialos-sdk",

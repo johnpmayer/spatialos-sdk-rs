@@ -1,0 +1,22 @@
+[package]
+name = "amethyst-example"
+version = "0.0.0"
+authors = [
+    "John Mayer <john.p.mayer.jr@gmail.com"
+]
+edition = "2018"
+
+[dependencies]
+amethyst = "0.12"
+specs = "0.15"
+spatialos-sdk = { path = "../spatialos-sdk"}
+# Everything below here is cargo-culted
+futures = "0.1.25"
+uuid = { version = "0.7", features = ["v4"] }
+structopt = "0.2.14"
+rand = "0.6.5"
+tap = "0.3.0"
+
+[features]
+default = ["amethyst/vulkan"] # not really sure if this works
+# vulkan = ["amethyst/vulkan"]
