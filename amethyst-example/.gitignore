@@ -2,3 +2,6 @@
 .improbable/
 logs/
 build/
+
+# Rust generated
+target/

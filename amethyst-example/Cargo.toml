@@ -20,3 +20,11 @@ tap = "0.3.0"
 [features]
 default = ["amethyst/vulkan"] # not really sure if this works
 # vulkan = ["amethyst/vulkan"]
+
+[[bin]]
+name = "server-worker"
+path = "src/server.rs"
+
+[[bin]]
+name = "player-worker"
+path = "src/player.rs"

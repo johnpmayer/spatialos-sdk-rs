@@ -1,7 +1,6 @@
 [workspace]
 
 members = [
-    "amethyst-example",
     "cargo-spatial",
     "project-example",
     "spatialos-sdk",
@@ -9,4 +8,10 @@ members = [
     "spatialos-sdk-sys",
     "spatialos-sdk-tools",
     "test-suite"
+]
+
+exclude = [
+    # Excluded from the workspace due to incompatible bindgen
+    # This is fine, the spatial-sdk-tools are a cargo plugin, not a library
+    "amethyst-example", 
 ]
