@@ -1,6 +1,7 @@
 use crate::worker::internal::schema;
 use spatialos_sdk_sys::worker::*;
 use std::{collections::hash_map::HashMap, mem, os::raw, ptr, sync::Arc};
+use std::fmt::Debug;
 
 // Re-export inventory so generated code doesn't require the user to add inventory to their
 // Cargo.toml
@@ -27,13 +28,13 @@ where
 }
 
 // A trait that's implemented by a component to convert to/from schema handle types.
-pub trait Component
+pub trait Component: TypeConversion + ComponentData<Self>
 where
-    Self: std::marker::Sized,
+    Self: std::marker::Sized + Sync + Send + Clone + Debug,
 {
-    type Update;
-    type CommandRequest;
-    type CommandResponse;
+    type Update: TypeConversion + ComponentUpdate<Self> + Clone + Sync + Send;
+    type CommandRequest: Sync + Send + Clone;
+    type CommandResponse: Sync + Send + Clone;
 
     const ID: ComponentId;
 
